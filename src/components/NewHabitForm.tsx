@@ -1,8 +1,48 @@
-import { Check } from "phosphor-react"
+import { FormEvent, useState } from "react";
+import { Check } from "phosphor-react";
+
+import { api } from "../libs/axios";
+
+import * as Checkbox from "@radix-ui/react-checkbox";
+
+const availableWeekDays = [
+	'Domingo',
+	'Segunda-feira',
+	'Terça-feira',
+	'Quarta-feira',
+	'Quinta-feira',
+	'Sexta-feira',
+	'Sábado',
+];
 
 export const NewHabitForm = () => {
+	const [title, setTitle] = useState('');
+	const [weekDays, setWeekDays] = useState<number[]>([]);
+
+	const handleCreateNewHabit = async (event: FormEvent) => {
+		event.preventDefault();
+
+		if (!title || weekDays.length === 0) return;
+
+		await api.post('/habits', { title, weekDays });
+
+		setTitle('');
+		setWeekDays([]);
+	}
+
+	const handleToggleWeekDay = (weekDay: number) => {
+		if (weekDays.includes(weekDay)) {
+			setWeekDays(prev => prev.filter(day => day !== weekDay));
+		} else {
+			setWeekDays(prev => [...prev, weekDay]);
+		}
+	}
+
 	return (
-		<form className="w-full flex flex-col mt-6">
+		<form
+			onSubmit={handleCreateNewHabit}
+			className="w-full flex flex-col mt-6"
+		>
 			<label
 				htmlFor="title"
 				className="font-semibold leading-tight">
@@ -13,8 +53,11 @@ export const NewHabitForm = () => {
 				type="text"
 				id="title"
 				placeholder="ex. Exercício, dormir bem, etc..."
-				className="p-4 rounded-lg mt-12 bg-zinc-800 text-white placeholder:text-zinc-400"
 				autoFocus
+				required
+				value={title}
+				onChange={event => setTitle(event.target.value)}
+				className="p-4 rounded-lg mt-3 bg-zinc-800 text-white placeholder:text-zinc-400"
 			/>
 
 			<label
@@ -23,6 +66,29 @@ export const NewHabitForm = () => {
 			>
 				Qual a recorrência?
 			</label>
+
+			<div className="flex flex-col gap-2 mt-3">
+				{ availableWeekDays.map((weekDay, i) => (
+					<Checkbox.Root
+						key={weekDay}
+						checked={weekDays.includes(i)}
+						onCheckedChange={() => handleToggleWeekDay(i)}
+						className='flex items-center gap-3 group'
+					>
+						<div
+							className='w-8 h-8 rounded-lg flex items-center justify-center bg-zinc-900 border-2 border-zinc-800 group-data-[state=checked]:bg-green-500 group-data-[state=checked]:border-green-500'
+						>
+							<Checkbox.Indicator>
+								<Check size={20} weight='bold' className='text-white'/>
+							</Checkbox.Indicator>
+						</div>
+
+						<span className='text-white leading-tight'>
+							{ weekDay }
+						</span>
+					</Checkbox.Root>
+				)) }
+			</div>
 
 			<button
 				type="submit"
