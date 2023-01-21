@@ -52,7 +52,7 @@ export const SummaryTable = () => {
 							key={date.toString()}
 							date={date}
 							amount={dayInSummary?.amount}
-							completed={dayInSummary?.completed}
+							defaultCompleted={dayInSummary?.completed}
 						/>
 					)
 				}) }
