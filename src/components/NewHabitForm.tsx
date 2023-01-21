@@ -1,7 +1,8 @@
 import { FormEvent, useState } from "react";
+import { useMutation } from "react-query";
 import { Check } from "phosphor-react";
 
-import { api } from "../libs/axios";
+import { createNewHabit } from "../libs/api";
 
 import * as Checkbox from "@radix-ui/react-checkbox";
 
@@ -19,15 +20,16 @@ export const NewHabitForm = () => {
 	const [title, setTitle] = useState('');
 	const [weekDays, setWeekDays] = useState<number[]>([]);
 
-	const handleCreateNewHabit = async (event: FormEvent) => {
+	const { mutateAsync: handleCreateNewHabit } = useMutation(_ => createNewHabit(title, weekDays), {
+		async onMutate() {
+			setTitle('');
+			setWeekDays([]);
+		}
+	})
+
+	const onSubmit = async (event: FormEvent) => {
 		event.preventDefault();
-
-		if (!title || weekDays.length === 0) return;
-
-		await api.post('/habits', { title, weekDays });
-
-		setTitle('');
-		setWeekDays([]);
+		handleCreateNewHabit()
 	}
 
 	const handleToggleWeekDay = (weekDay: number) => {
@@ -40,7 +42,7 @@ export const NewHabitForm = () => {
 
 	return (
 		<form
-			onSubmit={handleCreateNewHabit}
+			onSubmit={onSubmit}
 			className="w-full flex flex-col mt-6"
 		>
 			<label

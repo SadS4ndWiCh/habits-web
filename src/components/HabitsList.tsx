@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Check } from 'phosphor-react';
 import dayjs from 'dayjs';
 
-import { api } from '../libs/axios';
+import { getDayHabitsList, toggleHabitCompleted } from '../libs/api';
 
 import * as Checkbox from '@radix-ui/react-checkbox';
 
@@ -22,22 +22,22 @@ interface HabitsInfo {
 }
 
 export const HabitsList = ({ date, onCompletedChange }: Props) => {
-	const [habitsInfo, setHabitsInfo] = useState<HabitsInfo>();
+	const queryClient = useQueryClient();
+	const queryKey = ['habitsList', date.toISOString()];
+	
+	const { data: habitsInfo } = useQuery<HabitsInfo>(
+		queryKey,
+		() => getDayHabitsList(date)
+	);
 
-	useEffect(() => {
-		api.get('/day', {
-			params: {
-				date: date.toISOString()
-			}
-		}).then(response => {
-			setHabitsInfo(response.data);
-		})
-	}, []);
+	const { mutateAsync: toggleCompleted } = useMutation(toggleHabitCompleted, {
+		onSuccess() { queryClient.invalidateQueries(queryKey); }
+	})
 
 	const isDateInPast = dayjs(date).endOf('day').isBefore(new Date());
 
 	const handleToggleHabit = async (habitId: string) => {
-		await api.patch(`/habits/${habitId}/toggle`);
+		toggleCompleted(habitId);
 
 		const isHabitAlreadyCompleted = habitsInfo!.completedHabits.includes(habitId);
 
@@ -47,11 +47,6 @@ export const HabitsList = ({ date, onCompletedChange }: Props) => {
 		} else {
 			completedHabits = [...habitsInfo!.completedHabits, habitId];
 		}
-
-		setHabitsInfo({
-			possibleHabits: habitsInfo!.possibleHabits,
-			completedHabits,
-		});
 
 		onCompletedChange(completedHabits.length);
 	}

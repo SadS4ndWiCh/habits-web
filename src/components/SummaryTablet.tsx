@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import dayjs from "dayjs";
 
-import { api } from "../libs/axios";
 import { generateDatesFromYearBeginning } from "../utils/generate-dates-from-year-beginning";
+import { getSummary } from "../libs/api";
 
 import { HabitDay } from "./HabitDay";
 
@@ -21,13 +21,7 @@ type Summary = {
 }[]
 
 export const SummaryTable = () => {
-	const [summary, setSummary] = useState<Summary>([]);
-
-	useEffect(() => {
-		api.get('/summary').then(response => {
-			setSummary(response.data);
-		})
-	}, []);
+	const { data: summary = [] } = useQuery<Summary>('summary', getSummary);
 
 	return (
 		<div className="w-full flex">
