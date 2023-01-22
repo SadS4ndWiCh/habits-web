@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import dayjs from 'dayjs';
 
 import { getDayHabitsList, toggleHabitCompleted } from '../libs/api';
+import { toggleArrayInsertion } from '../utils/toggle-array-insertion';
 
 import * as Checkbox from './Checkbox';
 
@@ -38,34 +39,25 @@ export const HabitsList = ({ date, onCompletedChange }: Props) => {
 	const handleToggleHabit = async (habitId: string) => {
 		toggleCompleted(habitId);
 
-		const isHabitAlreadyCompleted = habitsInfo!.completedHabits.includes(habitId);
-
-		let completedHabits: string[] = [];
-		if (isHabitAlreadyCompleted) {
-			completedHabits = habitsInfo!.completedHabits.filter(id => id !== habitId);
-		} else {
-			completedHabits = [...habitsInfo!.completedHabits, habitId];
-		}
+		const completedHabits = toggleArrayInsertion(habitId, habitsInfo!.completedHabits);
 
 		onCompletedChange(completedHabits.length);
 	}
 
 	return (
-		<>
-			<div className='mt-6 flex flex-col gap-3'>
-				{ habitsInfo?.possibleHabits.map(habit => (
-					<Checkbox.Root
-						key={habit.id}
-						onCheckedChange={() => handleToggleHabit(habit.id)}
-						checked={habitsInfo.completedHabits.includes(habit.id)}
-						disabled={isDateInPast}
-					>
-						<Checkbox.Label lineThrough>
-							{ habit.title }
-						</Checkbox.Label>
-					</Checkbox.Root>
-				)) }
-			</div>
-		</>
+		<div className='mt-6 flex flex-col gap-3'>
+			{ habitsInfo?.possibleHabits.map(habit => (
+				<Checkbox.Root
+					key={habit.id}
+					onCheckedChange={() => handleToggleHabit(habit.id)}
+					checked={habitsInfo.completedHabits.includes(habit.id)}
+					disabled={isDateInPast}
+				>
+					<Checkbox.Label lineThrough>
+						{ habit.title }
+					</Checkbox.Label>
+				</Checkbox.Root>
+			)) }
+		</div>
 	)
 }

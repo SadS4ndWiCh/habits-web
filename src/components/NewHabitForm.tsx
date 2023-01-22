@@ -3,6 +3,7 @@ import { useMutation } from "react-query";
 import { Check } from "phosphor-react";
 
 import { createNewHabit } from "../libs/api";
+import { toggleArrayInsertion } from "../utils/toggle-array-insertion";
 
 import * as Checkbox from "./Checkbox";
 
@@ -33,11 +34,7 @@ export const NewHabitForm = () => {
 	}
 
 	const handleToggleWeekDay = (weekDay: number) => {
-		if (weekDays.includes(weekDay)) {
-			setWeekDays(prev => prev.filter(day => day !== weekDay));
-		} else {
-			setWeekDays(prev => [...prev, weekDay]);
-		}
+		setWeekDays(toggleArrayInsertion(weekDay, weekDays));
 	}
 
 	return (
